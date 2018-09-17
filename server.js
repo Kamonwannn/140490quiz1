@@ -1,5 +1,5 @@
 var express = require('express');
-var pgp = require('pg-promise')();
+var app = express();
 var mysql = require('mysql')
 var connection = mysql.createConnection({
   host     : 'www.db4free.net',
@@ -8,22 +8,14 @@ var connection = mysql.createConnection({
   database : 'db140390'
 });
 
-connection.connect()
 
-connection.query('SELECT 1 + 1 AS solution', function (err, rows, fields) {
-  if (err) throw err
 
-  console.log('The solution is: ', rows[0].solution)
-})
-
-connection.end()
-var app = express();
 
 //app.use(express.static ('static') );
 app.set('view engine', 'ejs');
 
 app.get('/', function(req, res) {
-    res.render('pages/index');
+    res.render('pages/home');
         
     });
 
@@ -34,42 +26,26 @@ app.get('/', function(req, res) {
         res.render('pages/about',{fullname : name, hobbies:hobbies,bdate: bdate});
             
         });
-    //Display all products
+    //Display all students
         app.get('/students', function(req, res) {
-            var sid = req.param('sid');
-            var sql='select* from students';
-                if(sid){
-                    sql += ' where sid ='+sid;
-                }
-           db.any(sql)
-            .then(function(data){
-                console.log('DATA:'+data);
-                res.render('pages/students',{students: data})
-                
+            connection.query('SELECT* from students', function (err, rows, fields) {
+            if (err) throw err
+            res.render('pages/students',{students:rows})      
+            console.log( rows)
+                    })
+connection.end();
+});
+            
+    
+   //Display all subjects
+   app.get('/subjects', function(req, res) {
+    connection.query('SELECT* from subjects', function (err, rows, fields) {
+    if (err) throw err
+    res.render('pages/subjects',{subjects:rows})      
+    console.log( rows)
             })
-            .catch(function(error){
-                console.log('ERROR:'+error);
-            })
-
-        });
-   //Display all user
-            app.get('/subjects/:code', function(req, res) {
-                var id = req.param('code');
-                var sql='select* from subjects';
-                if(id){
-                    sql += ' where code ='+id;
-                }
-                db.any(sql)
-                 .then(function(data){
-                     console.log('DATA:'+data);
-                     res.render('pages/subjects',{subjects: data})
-                     
-                 })
-                 .catch(function(error){
-                     console.log('ERROR:'+error);
-                 })
-     
-                 });
+connection.end();
+});
 
   console.log('Appp is running at http://localhost:8080');          
 
